@@ -80,14 +80,29 @@ class FakeCapture:
     def goose_control_blocks(self) -> list[dict]:
         return [
             {
-                "go_id": "P1Q1BCU_Trip",
-                "gocb_ref": "P1Q1BCU/LLN0$GO$gcbTrip",
+                "event": "P1Q1BCU_Trip",
+                "goID": "P1Q1BCU_Trip",
+                "gocbRef": "P1Q1BCU/LLN0$GO$gcbTrip",
+                "datSet": "P1Q1BCU/LLN0$dsTrip",
                 "appid": 0x1000,
+                "dst_mac": "01:0c:cd:01:00:10",
                 "src_mac": "02:00:00:00:00:a1",
-                "st_num": 2,
-                "sq_num": 6,
+                "vlan_id": None,
+                "stNum": 2,
+                "sqNum": 6,
+                "confRev": 1,
+                "timeAllowedtoLive": 2000,
+                "simulation": False,
+                "ndsCom": False,
+                "numDatSetEntries": 2,
+                "members": [
+                    {"name": "d00", "type": "boolean"},
+                    {"name": "d01", "type": "bit-string"},
+                ],
+                "frames": 8,
+                "state_changes": 1,
                 "last_seen_ns": 1_700_000_005_060_000_000,
-                "values": {"d00": True, "d01": 0},
+                "alive": True,
             }
         ]
 

@@ -22,7 +22,6 @@ def test_actions_register_under_their_bare_names_and_flags_are_pinned():
         "check_permissions": (True, False),
         "list_gocbs": (True, False),
         "get_status": (True, False),
-        "get_snapshot": (True, False),
         "convert_pcap": (True, False),
         "demo_capture_path": (True, False),
     }
@@ -34,22 +33,19 @@ def test_trio_reports_nothing_running():
     actions.CAPTURES.clear()
     assert actions.list_gocbs()["status"] == "warning"
     assert actions.get_status()["status"] == "warning"
-    assert actions.get_snapshot("nope")["status"] == "error"
 
 
-def test_trio_over_a_running_capture(fake_packet):
+def test_blocks_and_status_over_a_running_capture(fake_packet):
     session = CaptureSession(InterfaceConfig("en0", "en0"), "GOOSE")
     session.start()
     actions.CAPTURES.clear()
     actions.CAPTURES["en0"] = session
     try:
         [block] = actions.list_gocbs()["control_blocks"]
-        assert (block["interface"], block["go_id"]) == ("en0", "P1Q1BCU_Trip")
+        assert (block["interface"], block["goID"], block["alive"]) == ("en0", "P1Q1BCU_Trip", True)
+        assert [m["name"] for m in block["members"]] == ["d00", "d01"]
         [status] = actions.get_status("en0")["interfaces"]
         assert status["running"] and status["goose_gocbs"] == 2
-        snapshot = actions.get_snapshot()
-        assert snapshot["control_blocks"][0]["values"] == {"d00": True, "d01": 0}
-        assert "captured_at_unix_ms" in snapshot
     finally:
         actions.CAPTURES.clear()
         session.stop()

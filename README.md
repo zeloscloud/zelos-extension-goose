@@ -88,9 +88,8 @@ keeps everything else on the station bus (Sampled Values, IP) out of the trace.
 | --- | --- |
 | `GOOSE/list_interfaces` | NICs on the machine running the agent |
 | `GOOSE/check_permissions` | Can we capture? If not, the exact fix |
-| `GOOSE/list_gocbs` | Every control block seen: goID, gocbRef, APPID, publisher, stNum/sqNum, last heard |
+| `GOOSE/list_gocbs` | Every control block seen: goID, gocbRef, datSet, APPID, publisher, stNum/sqNum/confRev, members, alive |
 | `GOOSE/get_status` | Per-interface capture and decoder counters (drops, malformed, gaps, expired) |
-| `GOOSE/get_snapshot` | Last header and dataset values of every control block, no bus I/O |
 | `GOOSE/convert_pcap` | Convert a pcap to `.trz`, optionally with an SCL. Runs without the extension started |
 | `GOOSE/demo_capture_path` | Path of the bundled demo capture, for `advanced.replay_pcap`. Runs without the extension started |
 

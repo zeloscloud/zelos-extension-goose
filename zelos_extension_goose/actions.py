@@ -14,7 +14,6 @@ import inspect
 import logging
 import platform
 import sys
-import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -154,8 +153,9 @@ def check_permissions(interface: str = "") -> dict[str, Any]:
 @action(
     "List Control Blocks",
     "Every GOOSE control block seen on the running interfaces: goID, gocbRef, "
-    "APPID, publisher MAC, current stNum/sqNum and when it was last heard. The "
-    "names the other actions and the trace use.",
+    "datSet, APPID, publisher MAC, VLAN, stNum/sqNum/confRev, member names and "
+    "types, frame and state-change counts, last heard, and whether it is alive "
+    "(heard within its timeAllowedtoLive). Live values are in the trace.",
     read_only=True,
 )
 @action.select(
@@ -196,33 +196,6 @@ def get_status(interface: str = "") -> dict[str, Any]:
     if err:
         return {**err, "interfaces": []}
     return {"status": "success", "interfaces": [s.status() for s in sessions]}
-
-
-@action(
-    "Get Snapshot",
-    "Last-seen header and dataset values of every control block on an interface, "
-    "straight from the decoder's cache: no bus I/O.",
-    read_only=True,
-)
-@action.select(
-    "interface",
-    title="Interface",
-    description="Leave empty for every running interface.",
-    required=False,
-    default="",
-    choices=_available_captures,
-)
-def get_snapshot(interface: str = "") -> dict[str, Any]:
-    sessions, err = _sessions(interface)
-    if err:
-        return {**err, "control_blocks": []}
-    captured_at_unix_ms = int(time.time() * 1000)
-    blocks = [{"interface": s.name, **b} for s in sessions for b in s.control_blocks()]
-    return {
-        "status": "success",
-        "captured_at_unix_ms": captured_at_unix_ms,
-        "control_blocks": blocks,
-    }
 
 
 @action(
