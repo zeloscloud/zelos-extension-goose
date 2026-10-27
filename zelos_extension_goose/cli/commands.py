@@ -47,13 +47,24 @@ _file_option = click.option(
     default=None,
     is_flag=False,
     flag_value=".",
-    help="Record trace to .trz (defaults to a UTC-stamped name).",
+    help="Record trace to .trz (defaults to a UTC-stamped name). Under `capture`, rows "
+    "stream to the agent and the file holds only the extension's own log.",
 )
+
+
+def _prefix(_ctx: click.Context, _param: click.Parameter, value: str) -> str:
+    """App mode's prefix check, so `--prefix` refuses what `advanced.prefix` does."""
+    if error := name_error(value.strip(), "Prefix", RESERVED_NAMES, required=True):
+        raise click.ClickException(error)
+    return value.strip()
+
+
 _prefix_option = click.option(
     "--prefix",
     default=DEFAULT_PREFIX,
     show_default=True,
-    help="Trace source name. Empty: the interface names the source.",
+    callback=_prefix,
+    help="Trace source for per-frame rows. Control blocks are always under GOOSE.",
 )
 
 
@@ -61,15 +72,14 @@ def _run(configs: list[InterfaceConfig], prefix: str, file: Path | None) -> None
     import zelos_sdk
 
     init_sdk(prefix)
-    source_name = prefix or configs[0].name
     output_file = resolve_output_file(file)
     try:
         if output_file:
             logger.info("Recording trace to: %s", output_file)
             with zelos_sdk.TraceWriter(str(output_file)):
-                run_sessions(configs, source_name)
+                run_sessions(configs, prefix)
         else:
-            run_sessions(configs, source_name)
+            run_sessions(configs, prefix)
     except CaptureDeniedError as exc:
         raise click.ClickException(f"{exc}\n\n{exc.remediation}") from exc
     except (ValueError, RuntimeError) as exc:
@@ -114,6 +124,9 @@ def capture_cmd(
     file: Path | None,
 ) -> None:
     """Subscribe on one or more INTERFACEs without app configuration.
+
+    Rows stream from the capture helper straight to the agent, as in the
+    Packet extension: `--file` records only this extension's own log.
 
     Examples:
 

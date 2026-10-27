@@ -9,8 +9,6 @@ import pytest
 from zelos_sdk.extensions import load_config
 
 from zelos_extension_goose.capture import ConfigError, parse_interfaces
-from zelos_extension_goose.cli.app import resolve_advanced
-from zelos_extension_goose.constants import trace_layout
 from zelos_extension_goose.decode import GooseConfig
 
 from .conftest import REPO_ROOT, SCHEMA_PATH
@@ -35,6 +33,10 @@ class TestSchema:
     def test_promiscuous_is_not_a_setting(self, tmp_path: Path):
         with pytest.raises(Exception, match="promiscuous"):
             load(tmp_path, {"advanced": {"promiscuous": False}})
+
+    def test_an_empty_prefix_is_refused(self, tmp_path: Path):
+        with pytest.raises(Exception, match="prefix: '' should be non-empty"):
+            load(tmp_path, {"advanced": {"prefix": ""}})
 
 
 class TestParseInterfaces:
@@ -72,13 +74,3 @@ class TestParseInterfaces:
     def test_duplicate_names_are_a_hard_error(self):
         with pytest.raises(ConfigError, match="Duplicate interface name"):
             parse_interfaces({"interfaces": [{"interface": "eth0.1"}, {"interface": "eth0:1"}]})
-
-
-class TestAdvanced:
-    def test_absent_prefix_is_the_default_and_empty_clears_it(self):
-        assert resolve_advanced({})["prefix"] == "GOOSE"
-        assert resolve_advanced({"advanced": {"prefix": ""}})["prefix"] == ""
-
-    def test_trace_layout(self):
-        assert trace_layout("GOOSE", "eth0") == ("GOOSE", "eth0")
-        assert trace_layout("", "eth0") == ("eth0", None)

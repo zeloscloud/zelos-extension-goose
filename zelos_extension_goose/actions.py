@@ -35,7 +35,12 @@ CAPTURES: dict[str, CaptureSession] = {}
 
 def _available_captures(*_args: Any) -> list[str]:
     """`choices=` provider; evaluated at form-render time."""
-    return sorted(CAPTURES.keys())
+    return sorted(CAPTURES.keys() | capture_mod.REPLAYS.keys())
+
+
+def _replays(name: str) -> list[tuple[str, Any]]:
+    """The running replay's decoder, as (name, decoder); live and replay never mix."""
+    return [(n, d) for n, d in capture_mod.REPLAYS.items() if name in ("", n)]
 
 
 def _sessions(name: str) -> tuple[list[CaptureSession], dict[str, Any] | None]:
@@ -152,7 +157,7 @@ def check_permissions(interface: str = "") -> dict[str, Any]:
 
 @action(
     "List Control Blocks",
-    "Every GOOSE control block seen on the running interfaces: goID, gocbRef, "
+    "Every GOOSE control block seen on the running interfaces or replay: goID, gocbRef, "
     "datSet, APPID, publisher MAC, VLAN, stNum/sqNum/confRev, member names and "
     "types, frame and state-change counts, last heard, and whether it is alive "
     "(heard within its timeAllowedtoLive). Live values are in the trace.",
@@ -167,20 +172,23 @@ def check_permissions(interface: str = "") -> dict[str, Any]:
     choices=_available_captures,
 )
 def list_gocbs(interface: str = "") -> dict[str, Any]:
-    sessions, err = _sessions(interface)
-    if err:
-        return {**err, "control_blocks": []}
-    blocks = [{"interface": s.name, **b} for s in sessions for b in s.control_blocks()]
+    if replays := _replays(interface):
+        blocks = [{"interface": n, **b} for n, d in replays for b in decode.control_blocks(d)]
+    else:
+        sessions, err = _sessions(interface)
+        if err:
+            return {**err, "control_blocks": []}
+        blocks = [{"interface": s.name, **b} for s in sessions for b in s.control_blocks()]
     return {"status": "success", "control_blocks": blocks, "count": len(blocks)}
 
 
 @action(
     "Get Status",
     "Per-interface read-loop counters (packets_read, kernel_drops, decode_stall_ms) "
-    "and GOOSE decoder counters (goose_messages, goose_gocbs, goose_malformed, "
-    "goose_stnum_gaps, goose_sqnum_gaps, goose_tal_expired). kernel_drops climbing "
-    "means the kernel buffer is too small; goose_tal_expired climbing with no gaps "
-    "means a publisher is late, not lost.",
+    "and GOOSE decoder counters (goose_frames, goose_malformed, goose_gocbs, "
+    "goose_stnum_gaps, goose_sqnum_gaps, goose_tal_expired, goose_schema_changes). "
+    "kernel_drops climbing means the kernel buffer is too small; goose_tal_expired "
+    "climbing with no gaps means a publisher is late, not lost.",
     read_only=True,
 )
 @action.select(
@@ -192,6 +200,9 @@ def list_gocbs(interface: str = "") -> dict[str, Any]:
     choices=_available_captures,
 )
 def get_status(interface: str = "") -> dict[str, Any]:
+    if replays := _replays(interface):
+        rows = [{"name": n, "running": True, **decode.counters(d.metrics())} for n, d in replays]
+        return {"status": "success", "interfaces": rows}
     sessions, err = _sessions(interface)
     if err:
         return {**err, "interfaces": []}

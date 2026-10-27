@@ -26,7 +26,7 @@ from ..capture import (
     parse_interfaces,
     replay_pcap,
 )
-from ..constants import DEFAULT_PREFIX, LOG_SOURCE_NAME, RESERVED_NAMES, name_error, trace_layout
+from ..constants import DEFAULT_PREFIX, RESERVED_NAMES, name_error
 from ..converter import capture_stem
 from ..decode import GooseConfig, parse_goose
 from ..demo import DEMO_PCAP
@@ -38,10 +38,7 @@ ADVANCED_DEFAULTS: dict[str, Any] = {"prefix": DEFAULT_PREFIX, "log_level": "INF
 
 
 def resolve_advanced(config: dict) -> dict:
-    """Merge the `advanced` object over its defaults.
-
-    An absent `prefix` takes the default; a present-but-empty one clears it.
-    """
+    """Merge the `advanced` object over its defaults."""
     return {**ADVANCED_DEFAULTS, **(config.get("advanced") or {})}
 
 
@@ -76,13 +73,12 @@ def init_sdk(prefix: str) -> None:
     """Actions, the SDK, and the log handler, in the order every entry point needs.
 
     The log source comes up first so startup messages land in the trace under
-    `<prefix>/log` (or `goose_log` with the prefix cleared). `init_global_source`
-    is idempotent, so `init` reuses it. `ACTION_PREFIX` is package-level so the
-    live namespace and the packaged at-rest inventory cannot drift apart.
+    `<prefix>/log`. `init_global_source` is idempotent, so `init` reuses it.
+    `ACTION_PREFIX` is package-level so the live namespace and the packaged
+    at-rest inventory cannot drift apart.
     """
     goose_actions.register_actions(zelos_sdk.actions_registry)
-    log_source_name, _ = trace_layout(prefix, LOG_SOURCE_NAME)
-    global_source = zelos_sdk.init_global_source(log_source_name)
+    global_source = zelos_sdk.init_global_source(prefix)
     zelos_sdk.init(name=ACTION_PREFIX, log_level="info", actions=True)
     root = logging.getLogger()
     if not any(isinstance(h, TraceLoggingHandler) for h in root.handlers):
@@ -122,15 +118,12 @@ def run_sessions(configs: list[InterfaceConfig], prefix: str) -> None:
     Returning normally (rather than `os._exit`) matters: the SDK's atexit hook
     drains the trace namespace and blocks until every queued event is delivered.
     """
-    # One refusal, before anything starts: a zelos-packet without the decoder
-    # fails here as a RuntimeError the caller turns into one legible line.
-    decode.require()
     stop_event = threading.Event()
     _install_shutdown(stop_event)
     started: list[CaptureSession] = []
     try:
         for cfg in configs:
-            session = CaptureSession(cfg, trace_layout(prefix, cfg.name)[0])
+            session = CaptureSession(cfg, prefix)
             session.start()
             started.append(session)
             goose_actions.CAPTURES[session.name] = session
@@ -158,7 +151,7 @@ def run_replay(
             if output_file:
                 logger.info("Recording trace to: %s", output_file)
                 stack.enter_context(zelos_sdk.TraceWriter(str(output_file)))
-            replay_pcap(path, name=name, source_name=trace_layout(prefix, name)[0], goose=goose)
+            replay_pcap(path, name=name, source_name=prefix, goose=goose)
     except KeyboardInterrupt:
         logger.warning("Replay of %s stopped before it finished", path)
 
@@ -169,7 +162,7 @@ def run_app_mode(demo_flag: bool, file: Path | None) -> None:
     advanced = resolve_advanced(config)
     _apply_log_level(advanced)
     prefix = str(advanced.get("prefix") or "").strip()
-    if error := name_error(prefix, "Prefix", RESERVED_NAMES):
+    if error := name_error(prefix, "Prefix", RESERVED_NAMES, required=True):
         _fail(error)
 
     if demo_flag:
@@ -195,14 +188,13 @@ def run_app_mode(demo_flag: bool, file: Path | None) -> None:
 
     output_file = resolve_output_file(file)
     init_sdk(prefix)
+    # One legible refusal before a writer or capture exists; the CLI refuses in
+    # CaptureSession.start / make_decoder.
     try:
         decode.require()
     except RuntimeError as exc:
         _fail(str(exc))
-    if prefix:
-        logger.info("Trace prefix: %s", prefix)
-    else:
-        logger.info("Trace prefix cleared: the interface or capture names the source")
+    logger.info("Trace prefix: %s", prefix)
 
     if replay:
         logger.info("Replay mode: decoding %s (no capture handle is opened)", replay)

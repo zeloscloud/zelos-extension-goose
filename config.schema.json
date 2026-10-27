@@ -11,10 +11,11 @@
     "interfaces": {
       "type": "array",
       "title": "Interfaces",
-      "description": "Segments to subscribe to, in parallel. They share the one 'GOOSE' trace source and appear side by side under it, one branch per interface. Leave empty when using Replay PCAP File.",
+      "description": "Segments to subscribe to, in parallel. Per-frame rows appear side by side under the Prefix source, one branch per interface; control blocks are always under 'GOOSE'. Leave empty when using Replay PCAP File.",
       "items": {
         "title": "Interface",
         "type": "object",
+        "additionalProperties": false,
         "properties": {
           "interface": {
             "type": "string",
@@ -29,7 +30,7 @@
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Names this interface's branch in the signal tree. Defaults to the interface name. Letters, digits, space, '_' and '-' only. Every entry shares the one 'GOOSE' source, so each name must be unique.",
+            "description": "Names this interface's branch in the signal tree. Defaults to the interface name. Letters, digits, space, '_' and '-' only. Every entry shares the Prefix source, so each name must be unique.",
             "ui:placeholder": "defaults to the interface"
           },
           "scl": {
@@ -61,10 +62,10 @@
         "prefix": {
           "type": "string",
           "title": "Prefix",
-          "description": "Leading trace source for per-frame rows, '<prefix>/<interface>/goose'. Clear it to give each interface its own trace source. Decoded control blocks are global to the station bus and always appear under 'GOOSE/<goID>', whatever the prefix.",
+          "description": "Trace source for per-frame rows, '<prefix>/<name>/goose'. Decoded control blocks are global to the station bus and always appear under 'GOOSE/<goID>', whatever the prefix.",
+          "minLength": 1,
           "default": "GOOSE",
-          "ui:placeholder": "GOOSE",
-          "ui:emptyValue": ""
+          "ui:placeholder": "GOOSE"
         },
         "replay_pcap": {
           "type": "string",

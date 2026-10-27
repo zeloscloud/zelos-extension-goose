@@ -107,6 +107,14 @@ class TestEntry:
         for cmd in ("interfaces", "check", "capture", "replay", "convert"):
             assert cmd in result.output
 
+    def test_an_empty_prefix_is_refused_before_capture(self, fake_packet):
+        import main
+
+        result = CliRunner().invoke(main.cli, ["capture", "en0", "--prefix", ""])
+        assert result.exit_code != 0
+        assert "must not be empty" in result.output
+        assert FakeCapture.instances == []
+
     def test_convert_command_refuses_a_missing_scl_legibly(self, fake_packet, demo_pcap: Path):
         import main
 

@@ -1,12 +1,15 @@
-"""The action surface: names, flags, and the read-only trio over a fake capture."""
+"""The action surface: names, flags, and the read-only actions over a fake capture."""
 
 from __future__ import annotations
 
 from zelos_sdk.actions import ActionsRegistry
 
 from zelos_extension_goose import actions
-from zelos_extension_goose.capture import CaptureSession, InterfaceConfig
+from zelos_extension_goose import capture as capture_mod
+from zelos_extension_goose.capture import CaptureSession, InterfaceConfig, replay_pcap
 from zelos_extension_goose.demo import DEMO_PCAP
+
+from .conftest import FakeDecoder
 
 
 def test_actions_register_under_their_bare_names_and_flags_are_pinned():
@@ -29,7 +32,7 @@ def test_actions_register_under_their_bare_names_and_flags_are_pinned():
     assert DEMO_PCAP.is_file()
 
 
-def test_trio_reports_nothing_running():
+def test_list_gocbs_and_get_status_report_nothing_running():
     actions.CAPTURES.clear()
     assert actions.list_gocbs()["status"] == "warning"
     assert actions.get_status()["status"] == "warning"
@@ -49,6 +52,21 @@ def test_blocks_and_status_over_a_running_capture(fake_packet):
     finally:
         actions.CAPTURES.clear()
         session.stop()
+
+
+def test_a_running_replay_answers_like_a_capture(fake_packet, monkeypatch):
+    seen = {}
+
+    def convert_file(self, path, *, realtime=False):
+        seen.update(blocks=actions.list_gocbs(), status=actions.get_status())
+        return 0
+
+    monkeypatch.setattr(FakeDecoder, "convert_file", convert_file)
+    actions.CAPTURES.clear()
+    replay_pcap(DEMO_PCAP, name="demo", source_name="GOOSE")
+    assert [b["interface"] for b in seen["blocks"]["control_blocks"]] == ["demo"]
+    assert seen["status"]["interfaces"][0]["goose_gocbs"] == 2
+    assert capture_mod.REPLAYS == {}
 
 
 def test_list_interfaces_and_auto_config_follow_the_form_contracts(fake_packet):

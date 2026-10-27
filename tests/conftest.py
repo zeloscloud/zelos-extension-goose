@@ -24,9 +24,8 @@ SCHEMA_PATH = REPO_ROOT / "config.schema.json"
 class FakeCapture:
     """Records the kwargs it was constructed with; never touches a socket.
 
-    The real ``PacketCapture`` signature plus the proposed GOOSE keywords,
-    spelled out rather than ``**kwargs``, so a keyword drifting out of
-    `capture_kwargs()` fails here.
+    The real ``PacketCapture`` signature, spelled out rather than
+    ``**kwargs``, so a keyword drifting out of `capture_kwargs()` fails here.
     """
 
     instances: list[FakeCapture] = []
@@ -73,8 +72,8 @@ class FakeCapture:
 
     def metrics(self) -> SimpleNamespace:
         return SimpleNamespace(
-            goose_frames=12, goose_messages=12, goose_gocbs=2, goose_malformed=0,
-            goose_unknown_members=0, goose_stnum_gaps=1, goose_sqnum_gaps=0, goose_tal_expired=0,
+            goose_frames=12, goose_malformed=0, goose_gocbs=2, goose_stnum_gaps=1,
+            goose_sqnum_gaps=0, goose_tal_expired=0, goose_schema_changes=0,
         )  # fmt: skip
 
     def goose_control_blocks(self) -> list[dict]:
@@ -108,12 +107,38 @@ class FakeCapture:
 
 
 class FakeDecoder:
-    """Counts the records in a pcap so replay tests assert something real."""
+    """Counts the records in a pcap so replay tests assert something real.
+
+    The real ``PacketDecoder`` signature, spelled out for the same reason as
+    :class:`FakeCapture`.
+    """
 
     instances: list[FakeDecoder] = []
+    metrics = FakeCapture.metrics
+    goose_control_blocks = FakeCapture.goose_control_blocks
 
-    def __init__(self, name="capture", source_name="Packet", source=None, **kwargs):
-        self.kwargs = {"name": name, "source_name": source_name, "source": source, **kwargs}
+    def __init__(
+        self,
+        name="capture",
+        source_name="Packet",
+        iface=None,
+        log_frames=True,
+        stored_frame_bytes=256,
+        emit_schemas_on_init=False,
+        source=None,
+        exclude_agent_addrs=None,
+        exclude_agent_port=None,
+        someip_sd_port=None,
+        someip_ports=None,
+        doip_port=None,
+        arxml=None,
+        signal_source=None,
+        pdu_source=None,
+        goose=False,
+        scl=None,
+        goose_source=None,
+    ):
+        self.kwargs = {k: v for k, v in locals().items() if k != "self"}
         self.flushed = False
         self.realtime = self.path = None
         FakeDecoder.instances.append(self)
@@ -131,10 +156,6 @@ class FakeDecoder:
 
     def flush(self) -> None:
         self.flushed = True
-
-
-FakeDecoder.__doc__ = (FakeDecoder.__doc__ or "") + "\n\n    goose (bool): decode GOOSE."
-FakeCapture.__doc__ = (FakeCapture.__doc__ or "") + "\n\n    filter (str | None): BPF expression."
 
 
 class FakeCapturePermissionError(PermissionError):

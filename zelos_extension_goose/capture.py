@@ -6,8 +6,7 @@ the helper holds whatever privilege the open needs, drops it before it reads a
 byte, and streams decoded rows straight to the agent over its own SDK
 connection. Nothing passes through this process.
 
-Per-frame rows follow the prefix rule (``<prefix>/<interface>/goose``, or the
-interface's own source when the prefix is cleared). Decoded control blocks are
+Per-frame rows land at ``<prefix>/<name>/goose``. Decoded control blocks are
 global to the station bus and always sit under the fixed ``GOOSE`` signal
 source as ``GOOSE/<goID>``, whatever the prefix.
 """
@@ -24,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from . import decode, pkg
-from .constants import BUFFER_SIZE, DEFAULT_PREFIX, GOOSE_BPF, SNAPLEN, name_error
+from .constants import BUFFER_SIZE, DEFAULT_PREFIX, GOOSE_BPF, RESERVED_NAMES, SNAPLEN, name_error
 from .decode import ConfigError, GooseConfig
 
 logger = logging.getLogger(__name__)
@@ -98,7 +97,7 @@ def parse_interfaces(config: dict) -> list[InterfaceConfig]:
             )
 
         raw_name = str(entry.get("name") or "").strip()
-        if error := name_error(raw_name, "interface Name", ("log",)):
+        if error := name_error(raw_name, "interface Name", RESERVED_NAMES):
             raise ConfigError(error)
         name = sanitize_capture_name(raw_name or interface)
         if name in seen:
@@ -182,6 +181,9 @@ def _diagnosis(exc: BaseException) -> str:
 #: per session. Two `TraceSource`s under one name both register, and the query
 #: layer then keeps only the newest, silently hiding the other's rows.
 _live_sources: dict[str, Any] = {}
+
+#: The running replay's `PacketDecoder`, by name, for `list_gocbs`/`get_status`.
+REPLAYS: dict[str, Any] = {}
 
 
 def make_trace_source(source_name: str, namespace: Any = None, *, cached: bool = True) -> Any:
@@ -351,9 +353,12 @@ def replay_pcap(
     if not pcap.exists():
         raise ConfigError(f"Capture file not found: {pcap}")
     logger.info("Replaying %s into %s.%s", pcap, source_name, sanitize_capture_name(name))
-    decoder = make_decoder(name, source_name, goose=goose)
-    count = decoder.convert_file(str(pcap), realtime=True)
-    decoder.flush()
+    decoder = REPLAYS[name] = make_decoder(name, source_name, goose=goose)
+    try:
+        count = decoder.convert_file(str(pcap), realtime=True)
+        decoder.flush()
+    finally:
+        REPLAYS.pop(name, None)
     logger.info("Replay of %s complete: %d packets", pcap.name, count)
     return {"file": str(pcap), "packets": count}
 

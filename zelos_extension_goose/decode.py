@@ -25,13 +25,12 @@ MIN_PACKET_VERSION = "0.0.5"
 #: `zelos_packet.Metrics` counters the GOOSE decoder adds, in the `someip_*` shape.
 COUNTERS = (
     "goose_frames",
-    "goose_messages",
-    "goose_gocbs",
     "goose_malformed",
-    "goose_unknown_members",
+    "goose_gocbs",
     "goose_stnum_gaps",
     "goose_sqnum_gaps",
     "goose_tal_expired",
+    "goose_schema_changes",
 )
 
 
@@ -79,21 +78,20 @@ def installed_version() -> str:
         return "none"
 
 
-def _documents(cls: Any, word: str) -> bool:
-    return word in (getattr(cls, "__doc__", None) or "").lower()
-
-
 def supported() -> bool:
     """Whether the installed zelos-packet decodes GOOSE and takes a BPF filter.
 
-    Both announce themselves in the native docstrings, the way the ARXML path
-    does; a version compare would miss a local build. The filter matters as
-    much as the decoder: without it every frame on the station bus is a row.
+    `goose_control_blocks` landed on both classes after the `filter` kwarg, so
+    it implies both; a version compare would miss a local build. The filter
+    matters as much as the decoder: without it every frame on the station bus
+    is a row.
     """
     if not pkg.available():
         return False
     mod = pkg.module()
-    return _documents(mod.PacketDecoder, "goose") and _documents(mod.PacketCapture, "filter")
+    return hasattr(mod.PacketDecoder, "goose_control_blocks") and hasattr(
+        mod.PacketCapture, "goose_control_blocks"
+    )
 
 
 def require() -> None:
@@ -112,14 +110,6 @@ def counters(metrics: Any) -> dict[str, int]:
     return {name: int(getattr(metrics, name, 0) or 0) for name in COUNTERS}
 
 
-def control_blocks(capture: Any) -> list[dict[str, Any]]:
-    """Every control block a running capture has seen, as plain dicts.
-
-    `PacketCapture.goose_control_blocks()` serves them from the helper's status
-    stream, the way `stats()` serves the read-loop counters. Empty on a package
-    without it.
-    """
-    fn = getattr(capture, "goose_control_blocks", None)
-    if fn is None:
-        return []
-    return [dict(block) if isinstance(block, dict) else vars(block) for block in fn()]
+def control_blocks(source: Any) -> list[dict[str, Any]]:
+    """Every control block a `PacketCapture` or `PacketDecoder` has seen, one dict each."""
+    return source.goose_control_blocks()

@@ -46,17 +46,16 @@ class TestKwargs:
 
 
 class TestRequire:
-    def test_a_package_without_the_filter_kwarg_is_refused(self, fake_packet, monkeypatch):
-        monkeypatch.setattr(fake_packet.PacketCapture, "__doc__", "promiscuous (bool): ...")
+    def test_a_capture_without_control_blocks_is_refused(self, fake_packet, monkeypatch):
+        monkeypatch.delattr(fake_packet.PacketCapture, "goose_control_blocks")
         with pytest.raises(RuntimeError, match="needs zelos-packet>="):
             decode.require()
 
     def test_a_package_without_the_decoder_is_refused_by_version(self, fake_packet, monkeypatch):
-        monkeypatch.setattr(fake_packet.PacketDecoder, "__doc__", "no such thing here")
+        monkeypatch.delattr(fake_packet.PacketDecoder, "goose_control_blocks")
         monkeypatch.setattr(decode, "installed_version", lambda: "0.0.4")
         with pytest.raises(RuntimeError, match=r"needs zelos-packet>=0\.0\.5; installed 0\.0\.4"):
             decode.require()
-        assert FakeCapture.instances == []
 
     def test_a_missing_package_is_its_own_message(self, monkeypatch):
         monkeypatch.setattr(pkg, "available", lambda: False)
@@ -65,7 +64,7 @@ class TestRequire:
             decode.require()
 
     def test_session_start_refuses_before_constructing(self, fake_packet, monkeypatch):
-        monkeypatch.setattr(fake_packet.PacketDecoder, "__doc__", "")
+        monkeypatch.delattr(fake_packet.PacketDecoder, "goose_control_blocks")
         with pytest.raises(RuntimeError, match="GOOSE decode needs"):
             _session().start()
         assert FakeCapture.instances == []
@@ -78,9 +77,6 @@ class TestCounters:
         status = s.status()
         assert status["goose_stnum_gaps"] == 1
         assert set(decode.COUNTERS) <= set(status)
-
-    def test_control_blocks_are_empty_on_a_package_without_them(self):
-        assert decode.control_blocks(object()) == []
 
 
 @needs_real_packet

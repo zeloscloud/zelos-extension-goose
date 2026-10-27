@@ -90,9 +90,7 @@ def convert_pcap(
     name = capture_stem(source)
     try:
         with zelos_sdk.TraceWriter(str(destination), namespace=namespace):
-            decoder = make_decoder(
-                name, prefix or name, namespace=namespace, cached=False, goose=goose
-            )
+            decoder = make_decoder(name, prefix, namespace=namespace, cached=False, goose=goose)
             packets = decoder.convert_file(str(source))
             decoder.flush()
     except KeyboardInterrupt:

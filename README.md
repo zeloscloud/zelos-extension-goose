@@ -3,9 +3,9 @@
 IEC 61850 GOOSE, in your Zelos workspace.
 
 - 📡 **Subscribe to a segment**: pick a network interface; every control block publishing on it appears, nothing to connect to
-- 🧩 **One event per control block**: `GOOSE/<goID>` with the header (`stNum`, `sqNum`, `t`, `timeAllowedtoLive`, `test`, `confRev`, ...) and every dataset member as a typed field
+- 🧩 **One event per control block**: `GOOSE/<goID>` with the header (`stNum`, `sqNum`, `t`, `timeAllowedtoLive`, `simulation`, `confRev`, ...) and every dataset member as a typed field
 - 📄 **Named by SCL**: add the station's `.scd`/`.cid` and members read `ldInst/lnName.doName.daName`; without it they are `d00`, `d01`, ...
-- 🩺 **Health per control block**: `stnum_gap`, `sqnum_gap`, `tal_expired`, so a lost or late publisher shows up as a signal
+- 🩺 **Health per control block**: per-frame `stnum_gap`, `sqnum_gap`, `tal_expired` flags, so a lost or late publisher shows up as a signal
 - 📁 **Open a pcap**: decode `.pcap`/`.pcapng`, plain or gzip/zstd compressed, with no privileges and no NIC
 - 🎛️ **Demo**: a bundled one-minute capture, for trying it without a substation
 - ⏱️ **One timeline**: trips line up with your Sampled Values, Modbus and sensor data
@@ -42,7 +42,7 @@ zelos extensions start goose --config '{"advanced": {"replay_pcap": "station.pca
 ```
 
 Control blocks appear in the tree under **GOOSE → goID**; drag one into the workspace to plot its
-members. Per-frame rows are under **GOOSE → your interface → goose**.
+members. Per-frame rows are under **prefix (default GOOSE) → your interface → goose**.
 
 ## Try it without hardware
 
@@ -61,14 +61,14 @@ keeps everything else on the station bus (Sampled Values, IP) out of the trace.
 
 | Event | One row per | Fields |
 | --- | --- | --- |
-| `GOOSE/<goID>` | GOOSE message of that control block | IEC 61850-8-1 names as on the wire: `appid`, `gocbRef`, `timeAllowedtoLive`, `datSet`, `goID`, `t`, `stNum`, `sqNum`, `simulation`, `confRev`, `ndsCom`, `numDatSetEntries`; then one field per dataset member (SCL name, else `d00`, `d01`, ... with the ASN.1 type in the description); then `src_mac`, `vlan_id`, `stnum_gap`, `sqnum_gap`, `tal_expired` |
-| `GOOSE/<interface>/goose` | GOOSE frame on that interface | the header fields above, `goID`, and `malformed` |
-| `GOOSE/<interface>/packets`, `stats` | captured frame, capture tick | as the Packet extension |
+| `GOOSE/<goID>` | GOOSE message of that control block | the IEC 61850-8-1 header, named as on the wire: `appid`, `length`, `reserved1`, `reserved2`, `s_bit`, `gocbRef`, `timeAllowedtoLive`, `datSet`, `goID`, `t`, `t_quality`, `stNum`, `sqNum`, `simulation`, `confRev`, `ndsCom`, `numDatSetEntries`; then `src_mac`, `vlan_id`; then one field per dataset member (SCL name, else `d00`, `d01`, ... with the ASN.1 type in the description); then `stnum_gap`, `sqnum_gap`, `tal_expired` |
+| `<prefix>/<name>/goose` | GOOSE frame on that interface | `frame_no`, `iface`, the header above, `src_mac`, `dst_mac`, `vlan_id`, `vlan_pcp`, `malformed` |
+| `<prefix>/<name>/packets`, `stats` | captured frame, capture tick | as the Packet extension |
 
 - the event time is the capture time of the frame; the publisher's `t` is a field
 - a control block without a `goID` is named by its `gocbRef`
 - members are typed from the wire (boolean, bit string, integer, float, UTC time, visible string); an SCL refines the type and names them
-- `stnum_gap`/`sqnum_gap` is the number of messages skipped since the previous one; `tal_expired` is true when the previous message's `timeAllowedtoLive` had passed
+- `stnum_gap`/`sqnum_gap` are per-frame booleans, true when that counter skipped a value since the previous message; `tal_expired` is true when the previous message's `timeAllowedtoLive` had passed
 
 ## Settings
 
@@ -77,7 +77,7 @@ keeps everything else on the station bus (Sampled Values, IP) out of the trace.
 | `interfaces[].interface` | – | NIC to subscribe on |
 | `interfaces[].name` | interface name | Names this interface's branch in the tree |
 | `interfaces[].scl` | – | SCD/CID file to name and type dataset members by |
-| `advanced.prefix` | `GOOSE` | Trace source for per-frame rows; clear it to give each interface its own. Control blocks always sit under `GOOSE/<goID>` |
+| `advanced.prefix` | `GOOSE` | Trace source for per-frame rows, `<prefix>/<name>/goose`. Control blocks always sit under `GOOSE/<goID>`, whatever the prefix |
 | `advanced.replay_pcap` | – | Decode this `.pcap`/`.pcapng` (plain or `.gz`/`.zst`) instead of capturing; plays once, then exits. `interfaces` is ignored |
 | `advanced.replay_scl` | – | SCD/CID file for the replayed capture's publishers |
 | `advanced.log_level` | `INFO` | |
