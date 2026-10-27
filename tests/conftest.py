@@ -119,6 +119,7 @@ class FakeDecoder:
 
 
 FakeDecoder.__doc__ = (FakeDecoder.__doc__ or "") + "\n\n    goose (bool): decode GOOSE."
+FakeCapture.__doc__ = (FakeCapture.__doc__ or "") + "\n\n    filter (str | None): BPF expression."
 
 
 class FakeCapturePermissionError(PermissionError):

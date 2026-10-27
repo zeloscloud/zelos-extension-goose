@@ -79,15 +79,21 @@ def installed_version() -> str:
         return "none"
 
 
-def supported() -> bool:
-    """Whether the installed zelos-packet decodes GOOSE.
+def _documents(cls: Any, word: str) -> bool:
+    return word in (getattr(cls, "__doc__", None) or "").lower()
 
-    The decoder announces itself in `PacketDecoder`'s docstring, the way the
-    ARXML path does; a version compare would miss a local build.
+
+def supported() -> bool:
+    """Whether the installed zelos-packet decodes GOOSE and takes a BPF filter.
+
+    Both announce themselves in the native docstrings, the way the ARXML path
+    does; a version compare would miss a local build. The filter matters as
+    much as the decoder: without it every frame on the station bus is a row.
     """
     if not pkg.available():
         return False
-    return "goose" in (getattr(pkg.module().PacketDecoder, "__doc__", None) or "").lower()
+    mod = pkg.module()
+    return _documents(mod.PacketDecoder, "goose") and _documents(mod.PacketCapture, "filter")
 
 
 def require() -> None:

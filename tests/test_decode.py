@@ -46,6 +46,11 @@ class TestKwargs:
 
 
 class TestRequire:
+    def test_a_package_without_the_filter_kwarg_is_refused(self, fake_packet, monkeypatch):
+        monkeypatch.setattr(fake_packet.PacketCapture, "__doc__", "promiscuous (bool): ...")
+        with pytest.raises(RuntimeError, match="needs zelos-packet>="):
+            decode.require()
+
     def test_a_package_without_the_decoder_is_refused_by_version(self, fake_packet, monkeypatch):
         monkeypatch.setattr(fake_packet.PacketDecoder, "__doc__", "no such thing here")
         monkeypatch.setattr(decode, "installed_version", lambda: "0.0.4")
