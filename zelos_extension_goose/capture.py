@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from . import decode, pkg
-from .constants import BUFFER_SIZE, GOOSE_BPF, SNAPLEN, name_error
+from .constants import BUFFER_SIZE, DEFAULT_PREFIX, GOOSE_BPF, SNAPLEN, name_error
 from .decode import ConfigError, GooseConfig
 
 logger = logging.getLogger(__name__)
@@ -181,11 +181,11 @@ def _diagnosis(exc: BaseException) -> str:
 #: The live namespace's shared source, built on first use: ONE object, not one
 #: per session. Two `TraceSource`s under one name both register, and the query
 #: layer then keeps only the newest, silently hiding the other's rows.
-_live_source: Any = None
+_live_sources: dict[str, Any] = {}
 
 
 def make_trace_source(source_name: str, namespace: Any = None, *, cached: bool = True) -> Any:
-    """The source every subscription in this process writes into.
+    """The source every subscription in this process writes into, by name.
 
     `namespace` of None is the global namespace `zelos_sdk.init()` set up. A
     conversion passes its own namespace and gets its own source. `cached`
@@ -197,10 +197,9 @@ def make_trace_source(source_name: str, namespace: Any = None, *, cached: bool =
     factory = zelos_sdk.TraceSourceCache if cached else zelos_sdk.TraceSource
     if namespace is not None:
         return factory(source_name, namespace=namespace)
-    global _live_source
-    if _live_source is None:
-        _live_source = factory(source_name, namespace=None)
-    return _live_source
+    if source_name not in _live_sources:
+        _live_sources[source_name] = factory(source_name, namespace=None)
+    return _live_sources[source_name]
 
 
 # ─── Capture session ────────────────────────────────────────────────────────
@@ -324,9 +323,13 @@ def make_decoder(
     constructor keywords.
     """
     decode.require()
+    # Control blocks always land on the fixed `GOOSE` source, in the same
+    # namespace as the rows: left to its default, zelos-packet would make one
+    # in the global namespace, which a conversion's writer never sees.
     return pkg.module().PacketDecoder(
         name=sanitize_capture_name(name),
         source=make_trace_source(source_name, namespace, cached=cached),
+        goose_source=make_trace_source(DEFAULT_PREFIX, namespace, cached=cached),
         **goose.kwargs(),
     )
 
@@ -341,7 +344,8 @@ def replay_pcap(
     """Decode a pcap/pcapng into the *live* trace namespace. No privileges required.
 
     Paced at the capture's own rate and shifted so the first frame lands at
-    now. Only GOOSE frames become rows; the file may hold anything.
+    now. Every frame in the file gets a `packets` row, as the Packet extension
+    records; only GOOSE frames get `goose` rows and control block events.
     """
     pcap = Path(path).expanduser()
     if not pcap.exists():

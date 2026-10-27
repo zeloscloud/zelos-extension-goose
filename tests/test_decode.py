@@ -34,9 +34,14 @@ class TestKwargs:
 
     def test_decoder_gets_the_same_knobs(self, fake_packet):
         goose = GooseConfig(scl=("/x.scd",))
-        decoder = make_decoder("eth0.100", "GOOSE", namespace=object(), goose=goose)
+        ns = object()
+        decoder = make_decoder("eth0.100", "SUB1", namespace=ns, goose=goose)
         assert decoder.kwargs["name"] == "eth0_100"
-        assert decoder.kwargs["source"].name == "GOOSE"
+        assert decoder.kwargs["source"].name == "SUB1"
+        # Control blocks: fixed `GOOSE` source in the SAME namespace, or a
+        # conversion's writer never sees them.
+        assert decoder.kwargs["goose_source"].name == "GOOSE"
+        assert decoder.kwargs["goose_source"].namespace is ns
         assert goose.kwargs().items() <= decoder.kwargs.items()
 
 
