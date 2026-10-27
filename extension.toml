@@ -1,0 +1,51 @@
+# Zelos GOOSE Extension Manifest
+# See https://docs.zeloscloud.io/sdk/how-to/develop-extensions/ for full documentation
+
+name = "GOOSE"
+version = "0.1.0"
+description = "IEC 61850 GOOSE subscriber: every control block publishing on a network segment, decoded live or from a pcap"
+author = "Zelos"
+repository = "https://github.com/zeloscloud/zelos-extension-goose"
+homepage = "https://github.com/zeloscloud/zelos-extension-goose"
+keywords = ["goose", "iec61850", "iec 61850", "substation", "scl", "scd", "protection", "pcap", "ethernet"]
+categories = ["Industrial", "Networking", "IoT"]
+
+# File references (relative paths in archive)
+icon = "assets/icon.png"
+readme = "README.md"
+
+# Compatibility floor: 26.0.8 is the first release whose RJSF form drops a
+# `ui:widget` it does not register instead of throwing. This config names
+# `action-choices`, which older releases crash the whole config dialog on.
+[zelos]
+version = ">=26.0.8"
+
+# Configuration schema (enables UI in Zelos App)
+[config]
+schema = "config.schema.json"
+
+# Runtime configuration
+[runtime]
+type = "python"
+entry = "main.py"
+python_version = "3.11"
+
+# Stopping tears down every capture handle and lets the SDK's atexit hook drain
+# the trace pipeline; 15s leaves room for a busy interface's final flush before
+# the supervisor escalates to SIGKILL.
+[stop]
+grace_seconds = 15
+
+# Package boundary for `zelos extensions package`. extension.toml, README.md,
+# config.schema.json, assets/icon.png, pyproject.toml, uv.lock and the generated
+# actions.json are added automatically; everything else has to be named here.
+# `config.json` ships so a fresh install has sane defaults before the app writes
+# its own. The demo capture is inside the package directory already; naming it
+# makes the packaging test fail if it goes missing.
+[package]
+paths = [
+    "main.py",
+    "zelos_extension_goose",
+    "zelos_extension_goose/demo/goose-demo.pcap",
+    "config.json",
+]

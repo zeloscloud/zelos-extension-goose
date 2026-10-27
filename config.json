@@ -1,0 +1,7 @@
+{
+  "interfaces": [],
+  "advanced": {
+    "prefix": "GOOSE",
+    "log_level": "INFO"
+  }
+}
