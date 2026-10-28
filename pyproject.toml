@@ -1,0 +1,91 @@
+[project]
+name = "zelos-extension-goose"
+version = "0.1.0"
+description = "IEC 61850 GOOSE subscriber for Zelos"
+authors = [{ name = "zeloscloud", email = "info@zeloscloud.io" }]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+keywords = ["zelos", "extension", "goose", "iec61850", "substation", "pcap"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    # 0.0.13a1 has `hidden=` actions (older SDKs swallow the keyword and still
+    # list the action) and the evt_flush ABI slot the capture path needs. The
+    # prerelease marker has to appear HERE, on a direct dependency: uv enables
+    # prereleases per package only when a direct requirement names one.
+    "zelos-sdk>=0.0.13a1",
+    "rich-click>=1.8.0",
+    # Rust-cored capture + decode. Live capture is Linux (AF_PACKET) and macOS
+    # (/dev/bpf) only; the decode path is portable, so no sys_platform marker.
+    #
+    # Exact pin, as the Packet extension: the decoder surface and the privileged
+    # helper are matched to one release. `decode.py` still probes for the GOOSE
+    # decoder and refuses with the version it needs.
+    "zelos-packet==0.0.5",
+]
+
+[project.scripts]
+zelos-extension-goose = "main:cli"
+
+[project.urls]
+Homepage = "https://github.com/zeloscloud/zelos-extension-goose"
+Repository = "https://github.com/zeloscloud/zelos-extension-goose"
+Issues = "https://github.com/zeloscloud/zelos-extension-goose/issues"
+Documentation = "https://docs.zeloscloud.io/extensions"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.2",
+    "pre-commit>=4.3.0",
+    "ruff>=0.14.2",
+    "jsonschema>=4.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+required-version = ">=0.9.5"
+
+[tool.hatch.build.targets.wheel]
+packages = ["zelos_extension_goose"]
+
+# `main.py` is the extension entry point *and* the console script's module
+# (`main:cli`), so the wheel has to carry it alongside the package.
+[tool.hatch.build.targets.wheel.force-include]
+"main.py" = "main.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--log-cli-level=INFO"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "C4",   # flake8-comprehensions
+    "PTH",  # flake8-use-pathlib
+]
+ignore = [
+    "B008",   # function call in defaults (common in decorators)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

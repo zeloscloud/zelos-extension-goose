@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "title": "GOOSE Configuration",
+  "description": "Pick the network interfaces to listen on, save, then start. GOOSE is published to the whole segment, so every control block on that link appears; there is nothing to connect to. Optionally add the substation's SCL file (.scd/.cid) to name dataset members. Live capture needs a one-time grant on the machine running the agent; run the Check permissions action first. Decoding a pcap file needs no privileges at all.",
+  "ui:options": {
+    "autoconfig": "GOOSE/auto_config"
+  },
+  "properties": {
+    "interfaces": {
+      "type": "array",
+      "title": "Interfaces",
+      "description": "Segments to subscribe to, in parallel. Per-frame rows appear side by side under the Prefix source, one branch per interface; control blocks are always under 'GOOSE'. Leave empty when using Replay PCAP File.",
+      "items": {
+        "title": "Interface",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "interface": {
+            "type": "string",
+            "title": "Interface",
+            "description": "Network interface on the station bus (eth0, en0, enp3s0, ...). Choose from the machine running the agent, or type a name. The interface is put in promiscuous mode: GOOSE is multicast, and without it the NIC would drop every frame.",
+            "ui:widget": "action-choices",
+            "ui:placeholder": "eth0",
+            "ui:options": {
+              "action": "GOOSE/list_interfaces"
+            }
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Names this interface's branch in the signal tree. Defaults to the interface name. Letters, digits, space, '_' and '-' only. Every entry shares the Prefix source, so each name must be unique.",
+            "ui:placeholder": "defaults to the interface"
+          },
+          "scl": {
+            "type": "string",
+            "title": "SCL File",
+            "description": "SCD or CID file describing the publishers on this segment. With it, each control block's dataset members are named from the SCL (ldInst/lnName.doName.daName) and typed from it. Without it, members are named d00, d01, ... and typed from the wire.",
+            "ui:widget": "file-picker",
+            "ui:options": {
+              "accept": ".scd,.cid,.icd,.iid,.sed,.xml"
+            }
+          }
+        },
+        "required": [
+          "interface"
+        ]
+      },
+      "default": []
+    },
+    "advanced": {
+      "type": "object",
+      "title": "Advanced",
+      "description": "Settings that apply to every interface, and replaying a capture file instead.",
+      "ui:options": {
+        "collapsed": true
+      },
+      "additionalProperties": false,
+      "default": {},
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "title": "Prefix",
+          "description": "Trace source for per-frame rows, '<prefix>/<name>/goose'. Decoded control blocks are global to the station bus and always appear under 'GOOSE/<goID>', whatever the prefix.",
+          "minLength": 1,
+          "default": "GOOSE",
+          "ui:placeholder": "GOOSE"
+        },
+        "replay_pcap": {
+          "type": "string",
+          "title": "Replay PCAP File",
+          "description": "Decode a .pcap/.pcapng file, optionally gzip or zstd compressed, instead of capturing live. This path opens no capture handle and needs no privileges, so it works on any machine; use it to analyze a capture someone sent you. Plays at the capture's original pace with timestamps shifted to start now. When set, the Interfaces list is ignored and the extension exits once the replay finishes. To try the extension without hardware, pick the bundled demo capture: the 'Demo Capture Path' action shows where it is.",
+          "ui:widget": "file-picker",
+          "ui:options": {
+            "accept": ".pcap,.pcapng,.gz,.zst"
+          }
+        },
+        "replay_scl": {
+          "type": "string",
+          "title": "Replay SCL File",
+          "description": "SCL for the publishers in the replayed capture; same role as the per-interface SCL File.",
+          "ui:widget": "file-picker",
+          "ui:options": {
+            "accept": ".scd,.cid,.icd,.iid,.sed,.xml"
+          }
+        },
+        "log_level": {
+          "type": "string",
+          "title": "Log Level",
+          "description": "Logging verbosity for the extension.",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL"
+          ],
+          "default": "INFO"
+        }
+      }
+    }
+  }
+}
