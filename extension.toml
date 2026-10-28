@@ -2,7 +2,7 @@
 # See https://docs.zeloscloud.io/sdk/how-to/develop-extensions/ for full documentation
 
 name = "IEC 61850"
-version = "0.1.1"
+version = "0.2.1"
 description = "IEC 61850 station bus: a GOOSE subscriber for every control block on a segment, decoded live or from a pcap"
 author = "Zelos"
 repository = "https://github.com/zeloscloud/zelos-extension-iec61850"
