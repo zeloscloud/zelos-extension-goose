@@ -12,6 +12,32 @@ IEC 61850 GOOSE, in your Zelos workspace.
 
 Read-only by design: this extension never publishes a GOOSE message.
 
+## Quick start
+
+In the app:
+
+1. **Install** GOOSE from the Extensions view
+2. **Configure**: add an interface and pick the NIC on the station bus; optionally its SCL file, so members get their IEC 61850 names
+3. **Save & Start**
+4. **Plot**: control blocks appear under **GOOSE → goID**; drag a member into the workspace
+
+Live capture needs a one-time grant on the machine running the agent ([below](#granting-capture-rights)); the **Check permissions** action prints the command. Decoding a file needs nothing.
+
+From the CLI, on the agent that can see the segment:
+
+```bash
+zelos extensions install zeloscloud/zelos-extension-goose
+zelos extensions start zeloscloud.zelos-extension-goose --config '{"interfaces": [{"interface": "eth0"}]}'
+```
+
+Decoding a file instead plays it once at the capture's pace, then the extension exits:
+
+```bash
+zelos extensions start zeloscloud.zelos-extension-goose --config '{"advanced": {"replay_pcap": "station.pcapng", "replay_scl": "station.scd"}}'
+```
+
+Per-frame rows are under **prefix (default GOOSE) → your interface → goose**.
+
 ## Granting capture rights
 
 Capturing reads raw frames, which needs one grant per machine. Decoding a file does not.
@@ -25,24 +51,6 @@ sudo /path/to/python -m zelos_packet install-helper
 - 🔁 Log out and back in, then restart the agent: a session's groups are fixed at login
 - ✅ `python -m zelos_packet status` says whether capture would work right now
 - 🪟 Windows: live capture arrives with zelos-packet's Windows backend; until then use `advanced.replay_pcap`
-
-## Quick start
-
-```bash
-zelos extensions install goose
-zelos extensions start goose --config '{"interfaces": [{"interface": "eth0"}]}'
-```
-
-If the rights above are missing, the extension stops on start and logs the exact command to fix it.
-
-Decoding a file needs no privileges and no NIC. It plays once at the capture's pace, then the extension exits:
-
-```bash
-zelos extensions start goose --config '{"advanced": {"replay_pcap": "station.pcapng", "replay_scl": "station.scd"}}'
-```
-
-Control blocks appear in the tree under **GOOSE → goID**; drag one into the workspace to plot its
-members. Per-frame rows are under **prefix (default GOOSE) → your interface → goose**.
 
 ## Try it without hardware
 
