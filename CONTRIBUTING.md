@@ -59,7 +59,8 @@ The archive lands next to `extension.toml` as `goose-{version}.tar.gz`.
 
 ```bash
 just release 0.1.0
-git push --follow-tags
+git push
+git push origin v0.1.0   # the tag on its own: pushed together with the branch, Actions can miss it
 ```
 
 The tag drives `.github/workflows/release.yml`, which re-verifies the version
