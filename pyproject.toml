@@ -26,11 +26,10 @@ dependencies = [
     # Rust-cored capture + decode. Live capture is Linux (AF_PACKET) and macOS
     # (/dev/bpf) only; the decode path is portable, so no sys_platform marker.
     #
-    # Floor, not `==`: the GOOSE decoder is not in a released zelos-packet yet.
-    # `decode.py` probes the installed package for it and refuses with the
-    # version it needs. Pin `==` to that release once it ships, as the Packet
-    # extension does.
-    "zelos-packet>=0.0.4",
+    # Exact pin, as the Packet extension: the decoder surface and the privileged
+    # helper are matched to one release. `decode.py` still probes for the GOOSE
+    # decoder and refuses with the version it needs.
+    "zelos-packet==0.0.5",
 ]
 
 [project.scripts]
