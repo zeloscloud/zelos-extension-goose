@@ -2,7 +2,7 @@
 # See https://docs.zeloscloud.io/sdk/how-to/develop-extensions/ for full documentation
 
 name = "GOOSE"
-version = "0.1.0"
+version = "0.1.1"
 description = "IEC 61850 GOOSE subscriber: every control block publishing on a network segment, decoded live or from a pcap"
 author = "Zelos"
 repository = "https://github.com/zeloscloud/zelos-extension-goose"
