@@ -130,9 +130,9 @@ def capture_cmd(
 
     Examples:
 
-      zelos-extension-goose capture eth0
+      zelos-extension-iec61850 capture eth0
 
-      zelos-extension-goose capture eth0 eth1 --scl station.scd --file
+      zelos-extension-iec61850 capture eth0 eth1 --scl station.scd --file
     """
     try:
         configs = parse_interfaces(

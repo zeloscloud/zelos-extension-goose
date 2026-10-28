@@ -40,7 +40,7 @@ demo:
 
 # Regenerate the bundled demo capture from its generator
 demo-pcap:
-    uv run python -m zelos_extension_goose.demo.generate
+    uv run python -m zelos_extension_iec61850.demo.generate
 
 # List capturable interfaces
 interfaces:

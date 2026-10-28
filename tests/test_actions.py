@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from zelos_sdk.actions import ActionsRegistry
 
-from zelos_extension_goose import actions
-from zelos_extension_goose import capture as capture_mod
-from zelos_extension_goose.capture import CaptureSession, InterfaceConfig, replay_pcap
-from zelos_extension_goose.demo import DEMO_PCAP
+from zelos_extension_iec61850 import actions
+from zelos_extension_iec61850 import capture as capture_mod
+from zelos_extension_iec61850.capture import CaptureSession, InterfaceConfig, replay_pcap
+from zelos_extension_iec61850.demo import DEMO_PCAP
 
 from .conftest import FakeDecoder
 
@@ -78,7 +78,7 @@ def test_list_interfaces_and_auto_config_follow_the_form_contracts(fake_packet):
 
 
 def test_check_permissions_without_the_package_still_carries_remediation(monkeypatch):
-    from zelos_extension_goose import pkg
+    from zelos_extension_iec61850 import pkg
 
     monkeypatch.setattr(pkg, "available", lambda: False)
     result = actions.check_permissions()

@@ -1,4 +1,4 @@
-"""Free-floating GOOSE actions registered under ``GOOSE/<name>``.
+"""Free-floating GOOSE actions registered under ``IEC61850/<name>``.
 
 Same shape as the Packet extension: free functions (so ``choices=`` can
 reference a module-level callable), a shared registry populated by ``cli/app.py``
@@ -275,8 +275,8 @@ def demo_capture_path() -> dict[str, Any]:
 def register_actions(registry: ActionsRegistry) -> list[str]:
     """Register every ``@action``-decorated free function by its bare name.
 
-    The ``GOOSE/`` prefix consumers see comes from
-    ``zelos_sdk.init(name="GOOSE", actions=True)``.
+    The ``IEC61850/`` prefix consumers see comes from
+    ``zelos_sdk.init(name="IEC61850", actions=True)``.
     """
     module = sys.modules[__name__]
     registered: list[str] = []

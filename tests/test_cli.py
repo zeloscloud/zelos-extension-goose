@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from zelos_extension_goose.cli import app
-from zelos_extension_goose.converter import convert_pcap, resolve_output
-from zelos_extension_goose.demo import DEMO_PCAP, generate
+from zelos_extension_iec61850.cli import app
+from zelos_extension_iec61850.converter import convert_pcap, resolve_output
+from zelos_extension_iec61850.demo import DEMO_PCAP, generate
 
 from .conftest import FakeCapture, FakeDecoder
 
