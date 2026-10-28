@@ -14,6 +14,8 @@ Read-only by design: this extension never publishes a GOOSE message.
 
 ## Quick start
 
+[![Install the IEC 61850 extension, pick the interface on the station bus, start it and plot a GOOSE dataset member](assets/howto/quickstart/quickstart.avif)](assets/howto/quickstart/quickstart.mp4)
+
 In the app:
 
 1. **Install** IEC 61850 from the Extensions view
