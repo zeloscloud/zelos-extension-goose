@@ -53,12 +53,16 @@ jobs:
           fi
           echo "✓ pyproject.toml version matches: $PYPROJECT_VERSION"
 
+      # 0.1.9 is the last CLI that packages the [runtime] manifest form. Later
+      # ones require [agent], which only Zelos 26.0.10 and later can install;
+      # move the manifest and drop the pin once 26.0.10 ships.
       - name: Install Zelos CLI
         run: |
           curl -fsSL https://release.zeloscloud.io/cli/install.sh | bash
           echo "$HOME/.zelos/bin" >> "$GITHUB_PATH"
         env:
           INSTALLER_NO_MODIFY_PATH: 1
+          ZELOS_VERSION: "0.1.9"
 
       - name: Install dependencies
         run: just ci-install
