@@ -20,7 +20,7 @@ from .capture import (
 #:
 #: Matches `name` in `extension.toml` and the default `advanced.prefix`, so the
 #: address a user reads in the app is the one they type.
-ACTION_PREFIX = "GOOSE"
+ACTION_PREFIX = "IEC61850"
 
 __all__ = [
     "ACTION_PREFIX",

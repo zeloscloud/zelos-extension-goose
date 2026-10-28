@@ -35,7 +35,7 @@ actions.json
 *.pcap
 *.pcapng
 *.trz
-!zelos_extension_goose/demo/goose-demo.pcap
+!zelos_extension_iec61850/demo/goose-demo.pcap
 
 # Tooling caches
 .ty_cache/

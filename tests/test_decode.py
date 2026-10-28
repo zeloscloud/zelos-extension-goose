@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from zelos_extension_goose import decode, pkg
-from zelos_extension_goose.capture import CaptureSession, InterfaceConfig, make_decoder
-from zelos_extension_goose.decode import GooseConfig
+from zelos_extension_iec61850 import decode, pkg
+from zelos_extension_iec61850.capture import CaptureSession, InterfaceConfig, make_decoder
+from zelos_extension_iec61850.decode import GooseConfig
 
 from .conftest import FakeCapture, needs_real_packet
 

@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from zelos_sdk.extensions import load_config
 
-from zelos_extension_goose.capture import ConfigError, parse_interfaces
-from zelos_extension_goose.decode import GooseConfig
+from zelos_extension_iec61850.capture import ConfigError, parse_interfaces
+from zelos_extension_iec61850.decode import GooseConfig
 
 from .conftest import REPO_ROOT, SCHEMA_PATH
 

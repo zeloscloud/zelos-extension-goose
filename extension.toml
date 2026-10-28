@@ -1,12 +1,12 @@
-# Zelos GOOSE Extension Manifest
+# Zelos IEC 61850 Extension Manifest
 # See https://docs.zeloscloud.io/sdk/how-to/develop-extensions/ for full documentation
 
-name = "GOOSE"
+name = "IEC 61850"
 version = "0.1.1"
-description = "IEC 61850 GOOSE subscriber: every control block publishing on a network segment, decoded live or from a pcap"
+description = "IEC 61850 station bus: a GOOSE subscriber for every control block on a segment, decoded live or from a pcap"
 author = "Zelos"
-repository = "https://github.com/zeloscloud/zelos-extension-goose"
-homepage = "https://github.com/zeloscloud/zelos-extension-goose"
+repository = "https://github.com/zeloscloud/zelos-extension-iec61850"
+homepage = "https://github.com/zeloscloud/zelos-extension-iec61850"
 keywords = ["goose", "iec61850", "iec 61850", "substation", "scl", "scd", "protection", "pcap", "ethernet"]
 categories = ["Industrial", "Networking", "IoT"]
 
@@ -45,7 +45,7 @@ grace_seconds = 15
 [package]
 paths = [
     "main.py",
-    "zelos_extension_goose",
-    "zelos_extension_goose/demo/goose-demo.pcap",
+    "zelos_extension_iec61850",
+    "zelos_extension_iec61850/demo/goose-demo.pcap",
     "config.json",
 ]

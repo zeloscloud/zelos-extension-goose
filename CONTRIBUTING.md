@@ -28,7 +28,7 @@
 ## The decoder
 
 Capture and GOOSE decode are `zelos-packet`'s. This extension only builds the
-keyword arguments (`zelos_extension_goose/decode.py`) and refuses, naming the
+keyword arguments (`zelos_extension_iec61850/decode.py`) and refuses, naming the
 version it needs, on a release without the decoder. Tests stub that seam;
 decode correctness is tested with the decoder, not here.
 
@@ -53,7 +53,7 @@ inside the archive. It is generated, never committed.
 just package
 ```
 
-The archive lands next to `extension.toml` as `goose-{version}.tar.gz`.
+The archive lands next to `extension.toml` as `iec-61850-{version}.tar.gz`.
 
 ## Releasing
 

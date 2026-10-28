@@ -1,5 +1,5 @@
 [project]
-name = "zelos-extension-goose"
+name = "zelos-extension-iec61850"
 version = "0.1.1"
 description = "IEC 61850 GOOSE subscriber for Zelos"
 authors = [{ name = "zeloscloud", email = "info@zeloscloud.io" }]
@@ -33,12 +33,12 @@ dependencies = [
 ]
 
 [project.scripts]
-zelos-extension-goose = "main:cli"
+zelos-extension-iec61850 = "main:cli"
 
 [project.urls]
-Homepage = "https://github.com/zeloscloud/zelos-extension-goose"
-Repository = "https://github.com/zeloscloud/zelos-extension-goose"
-Issues = "https://github.com/zeloscloud/zelos-extension-goose/issues"
+Homepage = "https://github.com/zeloscloud/zelos-extension-iec61850"
+Repository = "https://github.com/zeloscloud/zelos-extension-iec61850"
+Issues = "https://github.com/zeloscloud/zelos-extension-iec61850/issues"
 Documentation = "https://docs.zeloscloud.io/extensions"
 
 [project.optional-dependencies]
@@ -57,7 +57,7 @@ build-backend = "hatchling.build"
 required-version = ">=0.9.5"
 
 [tool.hatch.build.targets.wheel]
-packages = ["zelos_extension_goose"]
+packages = ["zelos_extension_iec61850"]
 
 # `main.py` is the extension entry point *and* the console script's module
 # (`main:cli`), so the wheel has to carry it alongside the package.

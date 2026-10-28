@@ -1,4 +1,4 @@
-# GOOSE
+# IEC 61850
 
 IEC 61850 GOOSE, in your Zelos workspace.
 
@@ -16,7 +16,7 @@ Read-only by design: this extension never publishes a GOOSE message.
 
 In the app:
 
-1. **Install** GOOSE from the Extensions view
+1. **Install** IEC 61850 from the Extensions view
 2. **Configure**: add an interface and pick the NIC on the station bus; optionally its SCL file, so members get their IEC 61850 names
 3. **Save & Start**
 4. **Plot**: control blocks appear under **GOOSE → goID**; drag a member into the workspace
@@ -26,14 +26,14 @@ Live capture needs a one-time grant on the machine running the agent ([below](#g
 From the CLI, on the agent that can see the segment:
 
 ```bash
-zelos extensions install zeloscloud/zelos-extension-goose
-zelos extensions start zeloscloud.zelos-extension-goose --config '{"interfaces": [{"interface": "eth0"}]}'
+zelos extensions install zeloscloud/zelos-extension-iec61850
+zelos extensions start zeloscloud.zelos-extension-iec61850 --config '{"interfaces": [{"interface": "eth0"}]}'
 ```
 
 Decoding a file instead plays it once at the capture's pace, then the extension exits:
 
 ```bash
-zelos extensions start zeloscloud.zelos-extension-goose --config '{"advanced": {"replay_pcap": "station.pcapng", "replay_scl": "station.scd"}}'
+zelos extensions start zeloscloud.zelos-extension-iec61850 --config '{"advanced": {"replay_pcap": "station.pcapng", "replay_scl": "station.scd"}}'
 ```
 
 Per-frame rows are under **prefix (default GOOSE) → your interface → goose**.
@@ -43,7 +43,7 @@ Per-frame rows are under **prefix (default GOOSE) → your interface → goose**
 Capturing reads raw frames, which needs one grant per machine. Decoding a file does not.
 
 ```bash
-uv run zelos-extension-goose check        # when denied, prints the exact command for this machine
+uv run zelos-extension-iec61850 check        # when denied, prints the exact command for this machine
 sudo /path/to/python -m zelos_packet install-helper
 ```
 
@@ -56,8 +56,8 @@ sudo /path/to/python -m zelos_packet install-helper
 
 A one-minute capture ships with the extension: two publishers, one VLAN-tagged, tripping and resetting.
 
-- **App**: run `GOOSE/demo_capture_path`, paste the path into **Advanced → Replay PCAP File**, save, start
-- **CLI**: `uv run zelos-extension-goose --demo`
+- **App**: run `IEC61850/demo_capture_path`, paste the path into **Advanced → Replay PCAP File**, save, start
+- **CLI**: `uv run zelos-extension-iec61850 --demo`
 
 Either way it plays once and the extension exits.
 
@@ -94,22 +94,22 @@ keeps everything else on the station bus (Sampled Values, IP) out of the trace.
 
 | Action | |
 | --- | --- |
-| `GOOSE/list_interfaces` | NICs on the machine running the agent |
-| `GOOSE/check_permissions` | Can we capture? If not, the exact fix |
-| `GOOSE/list_gocbs` | Every control block seen: goID, gocbRef, datSet, APPID, publisher, stNum/sqNum/confRev, members, alive |
-| `GOOSE/get_status` | Per-interface capture and decoder counters (drops, malformed, gaps, expired) |
-| `GOOSE/convert_pcap` | Convert a pcap to `.trz`, optionally with an SCL. Runs without the extension started |
-| `GOOSE/demo_capture_path` | Path of the bundled demo capture, for `advanced.replay_pcap`. Runs without the extension started |
+| `IEC61850/list_interfaces` | NICs on the machine running the agent |
+| `IEC61850/check_permissions` | Can we capture? If not, the exact fix |
+| `IEC61850/list_gocbs` | Every control block seen: goID, gocbRef, datSet, APPID, publisher, stNum/sqNum/confRev, members, alive |
+| `IEC61850/get_status` | Per-interface capture and decoder counters (drops, malformed, gaps, expired) |
+| `IEC61850/convert_pcap` | Convert a pcap to `.trz`, optionally with an SCL. Runs without the extension started |
+| `IEC61850/demo_capture_path` | Path of the bundled demo capture, for `advanced.replay_pcap`. Runs without the extension started |
 
 ## CLI
 
 ```bash
-uv run zelos-extension-goose interfaces                       # list NICs
-uv run zelos-extension-goose check                            # probe permissions
-uv run zelos-extension-goose capture eth0 --scl station.scd   # subscribe, no app config
-uv run zelos-extension-goose replay station.pcapng            # stream a file to the agent once, paced
-uv run zelos-extension-goose convert station.pcapng.gz        # write station.trz, no agent needed
-uv run zelos-extension-goose --demo                           # the bundled capture, played once
+uv run zelos-extension-iec61850 interfaces                       # list NICs
+uv run zelos-extension-iec61850 check                            # probe permissions
+uv run zelos-extension-iec61850 capture eth0 --scl station.scd   # subscribe, no app config
+uv run zelos-extension-iec61850 replay station.pcapng            # stream a file to the agent once, paced
+uv run zelos-extension-iec61850 convert station.pcapng.gz        # write station.trz, no agent needed
+uv run zelos-extension-iec61850 --demo                           # the bundled capture, played once
 ```
 
 `capture`, `replay` and `convert` take `--scl` and `--prefix`.
@@ -117,6 +117,6 @@ uv run zelos-extension-goose --demo                           # the bundled capt
 ## Links
 
 - [Documentation](https://docs.zeloscloud.io)
-- [Issues](https://github.com/zeloscloud/zelos-extension-goose/issues)
+- [Issues](https://github.com/zeloscloud/zelos-extension-iec61850/issues)
 
 MIT. See [LICENSE](LICENSE).

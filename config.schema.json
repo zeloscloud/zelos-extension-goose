@@ -5,7 +5,7 @@
   "title": "GOOSE Configuration",
   "description": "Pick the network interfaces to listen on, save, then start. GOOSE is published to the whole segment, so every control block on that link appears; there is nothing to connect to. Optionally add the substation's SCL file (.scd/.cid) to name dataset members. Live capture needs a one-time grant on the machine running the agent; run the Check permissions action first. Decoding a pcap file needs no privileges at all.",
   "ui:options": {
-    "autoconfig": "GOOSE/auto_config"
+    "autoconfig": "IEC61850/auto_config"
   },
   "properties": {
     "interfaces": {
@@ -24,7 +24,7 @@
             "ui:widget": "action-choices",
             "ui:placeholder": "eth0",
             "ui:options": {
-              "action": "GOOSE/list_interfaces"
+              "action": "IEC61850/list_interfaces"
             }
           },
           "name": {

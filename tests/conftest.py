@@ -14,8 +14,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from zelos_extension_goose import pkg
-from zelos_extension_goose.demo import DEMO_PCAP, generate
+from zelos_extension_iec61850 import pkg
+from zelos_extension_iec61850.demo import DEMO_PCAP, generate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "config.schema.json"
@@ -191,7 +191,7 @@ def make_fake_module(*, capture_cls=FakeCapture) -> SimpleNamespace:
 
 def install_fake(monkeypatch, *, capture_cls=FakeCapture) -> SimpleNamespace:
     """A stand-in `zelos_packet` (and trace source) for one test."""
-    from zelos_extension_goose import capture as capture_mod
+    from zelos_extension_iec61850 import capture as capture_mod
 
     FakeCapture.instances.clear()
     FakeDecoder.instances.clear()

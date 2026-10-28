@@ -7,8 +7,8 @@ from pathlib import Path
 
 import rich_click as click
 
-from zelos_extension_goose import ACTION_PREFIX as _ACTION_PREFIX
-from zelos_extension_goose import cli as cli_commands
+from zelos_extension_iec61850 import ACTION_PREFIX as _ACTION_PREFIX
+from zelos_extension_iec61850 import cli as cli_commands
 
 #: Re-exported so the at-rest inventory dump - which reads this entry module -
 #: addresses the actions the same way the live registration does. Without it the

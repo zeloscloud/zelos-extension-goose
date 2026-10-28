@@ -1,1 +1,1 @@
-"""Test package for zelos-extension-goose."""
+"""Test package for zelos-extension-iec61850."""
